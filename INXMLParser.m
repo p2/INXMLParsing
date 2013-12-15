@@ -117,8 +117,8 @@ void xmlSchemaValidityError(void **ctx, const char *format, ...);
 		NSString *trimmed = [self currentStringBuffer];
 		if (trimmed) {
 			[_currentNode addChild:[INXMLTextNode nodeWithText:trimmed]];
-			[_stringBuffer setString:@""];
 		}
+		[_stringBuffer setString:@""];
 		
 		// append
 		[_currentNode addChild:node];
