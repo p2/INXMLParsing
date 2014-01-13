@@ -14,6 +14,8 @@
 
 #define kINURLLoaderDefaultTimeoutInterval 60.0								///< timeout interval in seconds
 
+extern NSString *const INErrorKey;
+
 
 /**
  *  A block returning a success flag and a user info dictionary.

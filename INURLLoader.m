@@ -12,6 +12,8 @@
 
 #import "INURLLoader.h"
 
+NSString *const INErrorKey = @"INError";
+
 @interface INURLLoader ()
 
 @property (copy, nonatomic) INCancelErrorBlock callback;
