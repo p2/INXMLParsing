@@ -41,6 +41,8 @@ typedef void (^INCancelErrorBlock)(BOOL userDidCancel, NSString * __autoreleasin
 @property (nonatomic, readonly) NSUInteger responseStatus;			///< The HTTP response status code
 @property (nonatomic) BOOL expectBinaryData;						///< NO by default. Set to YES if you expect binary data; "responseString" will be left nil!
 
+@property (strong, nonatomic) id context;							///< The instance's context at your disposal
+
 - (id)initWithURL:(NSURL *)anURL;
 + (id)loaderWithURL:(NSURL *)anURL;
 
