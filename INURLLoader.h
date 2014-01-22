@@ -12,7 +12,7 @@
 
 @import Foundation;
 
-#define kINURLLoaderDefaultTimeoutInterval 60.0								///< timeout interval in seconds
+#define kINURLLoaderDefaultTimeoutInterval 60.0						///< timeout interval in seconds
 
 extern NSString *const INErrorKey;
 

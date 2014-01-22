@@ -162,7 +162,7 @@ void xmlSchemaValidityError(void **ctx, const char *format, ...);
  */
 - (void)parser:(NSXMLParser *)parser parseErrorOccurred:(NSError *)parseError
 {
-	self.errorOnLine = [NSString stringWithFormat:@"Parser error occurred on line %d, column %d", [parser lineNumber], [parser columnNumber]];
+	self.errorOnLine = [NSString stringWithFormat:@"Parser error occurred on line %ld, column %ld", (long)[parser lineNumber], (long)[parser columnNumber]];
 }
 
 /**
