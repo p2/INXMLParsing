@@ -20,6 +20,7 @@ NSString *const INErrorKey = @"INError";
 @property (strong, nonatomic) NSMutableData *loadingCache;
 @property (copy, nonatomic, readwrite) NSData *responseData;
 @property (copy, nonatomic, readwrite) NSString *responseString;
+@property (copy, nonatomic, readwrite) id responseJSONObject;
 @property (nonatomic, readwrite) NSUInteger responseStatus;
 
 @property (strong, nonatomic) NSURLConnection *currentConnection;
@@ -59,6 +60,7 @@ NSString *const INErrorKey = @"INError";
 {
 	self.responseData = nil;
 	self.responseString = nil;
+	self.responseJSONObject = nil;
 	self.responseStatus = 1000;
 	self.currentConnection = nil;
 	self.currentResponse = nil;
@@ -160,6 +162,24 @@ NSString *const INErrorKey = @"INError";
 - (void)abort
 {
 	[self didTimeout:nil];
+}
+
+
+
+#pragma mark - Response Preparation
+- (id)responseJSONObject
+{
+	if (!_responseJSONObject && _responseData) {
+		NSError *error = nil;
+		id obj = [NSJSONSerialization JSONObjectWithData:_responseData options:0 error:&error];
+		if (!obj) {
+			DLog(@"Failed to decode JSON: %@", [error localizedDescription]);
+		}
+		else {
+			self.responseJSONObject = obj;
+		}
+	}
+	return _responseJSONObject;
 }
 
 

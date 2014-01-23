@@ -38,6 +38,7 @@ typedef void (^INCancelErrorBlock)(BOOL userDidCancel, NSString * __autoreleasin
 @property (strong, nonatomic) NSURL *url;							///< The URL we will load from
 @property (copy, nonatomic, readonly) NSData *responseData;			///< Will contain the response data as loaded from url
 @property (copy, nonatomic, readonly) NSString *responseString;		///< Will contain the response as NSString as loaded from url
+@property (copy, nonatomic, readonly) id responseJSONObject;		///< Will try to interpret the response data as JSON
 @property (nonatomic, readonly) NSUInteger responseStatus;			///< The HTTP response status code
 @property (nonatomic) BOOL expectBinaryData;						///< NO by default. Set to YES if you expect binary data; "responseString" will be left nil!
 
