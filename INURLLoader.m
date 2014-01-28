@@ -142,8 +142,7 @@ NSString *const INErrorKey = @"INError";
 	
 	// finish up
 	CANCEL_ERROR_CALLBACK_OR_LOG_ERR_STRING(_callback, didCancel, [anError localizedDescription]);
-	self.callback = nil;
-	self.currentConnection = nil;
+	[self cleanup];
 }
 
 
@@ -152,7 +151,7 @@ NSString *const INErrorKey = @"INError";
  */
 - (void)didTimeout:(NSTimer *)timer
 {
-	[self.currentConnection cancel];
+	[_currentConnection cancel];
 	self.loadingCache = nil;
 	
 	[self didFinishWithError:nil wasCancelled:YES];
@@ -162,6 +161,23 @@ NSString *const INErrorKey = @"INError";
 - (void)abort
 {
 	[self didTimeout:nil];
+}
+
+- (void)terminate
+{
+	[_currentConnection cancel];
+	[self cleanup];
+}
+
+- (void)cleanup
+{
+	[_timeout invalidate];
+	self.timeout = nil;
+	
+	self.currentConnection = nil;
+	self.currentResponse = nil;
+	self.loadingCache = nil;
+	self.callback = nil;
 }
 
 

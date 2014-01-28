@@ -67,10 +67,11 @@ typedef void (^INCancelErrorBlock)(BOOL userDidCancel, NSString * __autoreleasin
  */
 - (void)performRequest:(NSURLRequest *)aRequest withCallback:(INCancelErrorBlock)aCallback;
 
-/**
- *  Abort loading data.
- */
+/** Abort loading data. This will call the callback with a nil error message and the didCancel flag set to YES. */
 - (void)abort;
+
+/** Abort loading data and do not call the callback. */
+- (void)terminate;
 
 + (NSDictionary *)queryFromRequest:(NSURLRequest *)aRequest;
 + (NSDictionary *)queryFromRequestString:(NSString *)aString;
