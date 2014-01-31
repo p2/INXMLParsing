@@ -36,6 +36,8 @@ typedef void (^INCancelErrorBlock)(BOOL userDidCancel, NSString * __autoreleasin
 @interface INURLLoader : NSObject
 
 @property (strong, nonatomic) NSURL *url;							///< The URL we will load from
+@property (nonatomic) BOOL synchronous;								///< Defaults to NO, can be set to YES before performing a request to perform a synchronous request
+
 @property (copy, nonatomic, readonly) NSData *responseData;			///< Will contain the response data as loaded from url
 @property (copy, nonatomic, readonly) NSString *responseString;		///< Will contain the response as NSString as loaded from url
 @property (copy, nonatomic, readonly) id responseJSONObject;		///< Will try to interpret the response data as JSON
@@ -44,7 +46,11 @@ typedef void (^INCancelErrorBlock)(BOOL userDidCancel, NSString * __autoreleasin
 
 @property (strong, nonatomic) id context;							///< The instance's context at your disposal
 
+@property (nonatomic, readonly) BOOL loading;						///< Whether or not the receiver is currently loading
+
+/** Designated initializer. */
 - (id)initWithURL:(NSURL *)anURL;
+
 + (id)loaderWithURL:(NSURL *)anURL;
 
 /**

@@ -23,6 +23,7 @@ NSString *const INErrorKey = @"INError";
 @property (copy, nonatomic, readwrite) id responseJSONObject;
 @property (nonatomic, readwrite) NSUInteger responseStatus;
 
+@property (nonatomic, readwrite) BOOL loading;
 @property (strong, nonatomic) NSURLConnection *currentConnection;
 @property (strong, nonatomic) NSURLResponse *currentResponse;
 @property (nonatomic) NSTimeInterval timeoutInterval;
@@ -34,9 +35,6 @@ NSString *const INErrorKey = @"INError";
 @implementation INURLLoader
 
 
-/**
- *  Designated initializer.
- */
 - (id)initWithURL:(NSURL *)anURL
 {
 	if ((self = [super init])) {
@@ -53,23 +51,6 @@ NSString *const INErrorKey = @"INError";
 
 
 #pragma mark - URL Loading
-/**
- *  Praparations before beginning to load.
- */
-- (void)prepareWithCallback:(INCancelErrorBlock)callback
-{
-	self.responseData = nil;
-	self.responseString = nil;
-	self.responseJSONObject = nil;
-	self.responseStatus = 1000;
-	self.currentConnection = nil;
-	self.currentResponse = nil;
-	self.callback = callback;
-	[_timeout invalidate];
-	self.timeout = nil;
-	self.loadingCache = [NSMutableData data];
-}
-
 - (void)getWithCallback:(INCancelErrorBlock)callback
 {
 	if (!_url) {
@@ -100,6 +81,10 @@ NSString *const INErrorKey = @"INError";
 
 - (void)performRequest:(NSURLRequest *)request withCallback:(INCancelErrorBlock)callback
 {
+	if (_currentConnection) {
+		CANCEL_ERROR_CALLBACK_OR_LOG_ERR_STRING(callback, YES, @"A request is already under way");
+		return;
+	}
 	if (!_url) {
 		self.url = request.URL;
 		if (!_url) {
@@ -108,13 +93,32 @@ NSString *const INErrorKey = @"INError";
 		}
 	}
 	
-	// prepare and set a timeout timer manually
-	[self prepareWithCallback:callback];
+	self.responseData = nil;
+	self.responseString = nil;
+	self.responseJSONObject = nil;
+	self.responseStatus = 1000;
+	
+	self.callback = callback;
+	
+	// set a timeout timer manually
+	[_timeout invalidate];
 	self.timeoutInterval = fmin(kINURLLoaderDefaultTimeoutInterval, request.timeoutInterval);
 	self.timeout = [NSTimer scheduledTimerWithTimeInterval:_timeoutInterval target:self selector:@selector(didTimeout:) userInfo:nil repeats:NO];
 	
 	//NSLog(@"-->  %@", request.URL);
-	self.currentConnection = [NSURLConnection connectionWithRequest:request delegate:self];
+	if (_synchronous) {
+		self.loading = YES;
+		NSURLResponse *resp = nil;
+		NSError *error = nil;
+		self.responseData = [NSURLConnection sendSynchronousRequest:request returningResponse:&resp error:&error];
+		self.currentResponse = resp;
+		[self didFinishWithError:error wasCancelled:NO];
+	}
+	else {
+		self.currentResponse = nil;
+		self.loadingCache = [NSMutableData data];
+		self.currentConnection = [NSURLConnection connectionWithRequest:request delegate:self];
+	}
 }
 
 
@@ -126,18 +130,18 @@ NSString *const INErrorKey = @"INError";
 	[_timeout invalidate];
 	self.timeout = nil;
 	
+	if ([_currentResponse isKindOfClass:[NSHTTPURLResponse class]]) {
+		self.responseStatus = [(NSHTTPURLResponse *)_currentResponse statusCode];
+	}
+	
 	// extract response
 	if ([_loadingCache length] > 0) {
-		if ([_currentResponse isKindOfClass:[NSHTTPURLResponse class]]) {
-			self.responseStatus = [(NSHTTPURLResponse *)_currentResponse statusCode];
-		}
-		
-		// extract response string
 		self.responseData = _loadingCache;
 		self.loadingCache = nil;
-		if (!_expectBinaryData) {
-			self.responseString = [[NSString alloc] initWithData:_responseData encoding:NSUTF8StringEncoding];
-		}
+	}
+	
+	if (!_expectBinaryData) {
+		self.responseString = [[NSString alloc] initWithData:_responseData encoding:NSUTF8StringEncoding];
 	}
 	
 	// finish up
@@ -174,10 +178,17 @@ NSString *const INErrorKey = @"INError";
 	[_timeout invalidate];
 	self.timeout = nil;
 	
+	self.loading = NO;
 	self.currentConnection = nil;
 	self.currentResponse = nil;
 	self.loadingCache = nil;
 	self.callback = nil;
+}
+
+
+- (BOOL)loading
+{
+	return _loading || (nil != _currentConnection);
 }
 
 
@@ -190,6 +201,7 @@ NSString *const INErrorKey = @"INError";
 		id obj = [NSJSONSerialization JSONObjectWithData:_responseData options:0 error:&error];
 		if (!obj) {
 			DLog(@"Failed to decode JSON: %@", [error localizedDescription]);
+			DLog(@"Response was: %d", _responseStatus);
 		}
 		else {
 			self.responseJSONObject = obj;
