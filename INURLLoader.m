@@ -201,7 +201,7 @@ NSString *const INErrorKey = @"INError";
 		id obj = [NSJSONSerialization JSONObjectWithData:_responseData options:0 error:&error];
 		if (!obj) {
 			DLog(@"Failed to decode JSON: %@", [error localizedDescription]);
-			DLog(@"Response was: %d", _responseStatus);
+			DLog(@"Response was: %lu", (unsigned long)_responseStatus);
 		}
 		else {
 			self.responseJSONObject = obj;
